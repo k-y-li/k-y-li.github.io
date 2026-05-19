@@ -65,6 +65,19 @@
     transition: color 0.2s;
   }
   .mobile-nav ul a:hover { color: var(--teal); }
+  .float-nav-bottom-grip {
+    display: flex; justify-content: center; gap: 3px;
+    padding: 0.5rem 1rem 0.25rem;
+    border-top: 1px solid var(--border);
+    margin-top: 0.4rem;
+    opacity: 0.35;
+    cursor: grab;
+  }
+  .float-nav-bottom-grip span {
+    display: block; width: 3px; height: 3px;
+    border-radius: 50%; background: var(--muted);
+  }
+  .float-nav-bottom-grip:hover { opacity: 0.7; }
   .float-nav {
     position: fixed;
     top: 24px;
@@ -790,6 +803,9 @@
     <li><a href="#publications">Research</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
+  <div class="float-nav-bottom-grip">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 </nav>
 <script>
   (function() {
@@ -797,7 +813,8 @@
     const handle = document.getElementById('float-nav-handle');
     let dragging = false, ox = 0, oy = 0;
 
-    handle.addEventListener('mousedown', e => {
+    function startDrag(e) {
+      if (e.target.tagName === 'A') return; // let link clicks through
       dragging = false;
       const startX = e.clientX, startY = e.clientY;
       ox = e.clientX - nav.getBoundingClientRect().left;
@@ -821,7 +838,9 @@
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
       e.preventDefault();
-    });
+    }
+
+    nav.addEventListener('mousedown', startDrag);
 
     // Block the logo click if a drag just happened
     handle.querySelector('a').addEventListener('click', e => {
