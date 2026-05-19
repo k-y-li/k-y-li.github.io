@@ -37,7 +37,33 @@
     overflow-x: hidden;
   }
 
-  /* ─── FLOATING NAV PANEL ──────────────────────────────── */
+  /* ─── MOBILE HEADER ───────────────────────────────────── */
+  .mobile-nav {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    justify-content: space-between; align-items: center;
+    padding: 1rem 1.5rem;
+    background: rgba(11,15,20,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-nav .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--teal);
+    letter-spacing: 0.08em;
+  }
+  .mobile-nav ul { list-style: none; display: flex; gap: 1.25rem; }
+  .mobile-nav ul a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .mobile-nav ul a:hover { color: var(--teal); }
   .float-nav {
     position: fixed;
     top: 24px;
@@ -492,10 +518,11 @@
   /* ─── RESPONSIVE ──────────────────────────────────────── */
   @media (max-width: 768px) {
     .float-nav { display: none; }
+    .mobile-nav { display: flex; }
     .hero-grid, .edu-grid { grid-template-columns: 1fr; }
     .hero-stats { grid-template-columns: 1fr 1fr; }
     section { padding: 4rem 1.5rem; }
-    .hero { padding: 3rem 1.5rem; }
+    .hero { padding: 6rem 1.5rem 3rem; }
   }
 
   /* ─── POSTERS ─────────────────────────────────────────── */
@@ -767,11 +794,18 @@
     const saved = localStorage.getItem('navPos');
     if (saved) {
       const p = JSON.parse(saved);
-      nav.style.left = p.x + 'px';
-      nav.style.top  = p.y + 'px';
-      nav.style.right = 'auto';
+      // Discard saved positions that look like old top-left defaults
+      if (p.x > window.innerWidth / 2) {
+        nav.style.left = p.x + 'px';
+        nav.style.top  = p.y + 'px';
+        nav.style.right = 'auto';
+      } else {
+        localStorage.removeItem('navPos');
+        const rect = nav.getBoundingClientRect();
+        nav.style.left = rect.left + 'px';
+        nav.style.right = 'auto';
+      }
     } else {
-      // Convert right:24px to an explicit left value for dragging
       const rect = nav.getBoundingClientRect();
       nav.style.left = rect.left + 'px';
       nav.style.right = 'auto';
@@ -781,6 +815,18 @@
     });
   })();
 </script>
+
+<!-- MOBILE HEADER -->
+<header class="mobile-nav">
+  <span class="logo">kevin.li</span>
+  <ul>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Exp</a></li>
+    <li><a href="#education">Edu</a></li>
+    <li><a href="#publications">Research</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</header>
 
 <!-- HERO -->
 <div class="hero">
