@@ -37,38 +37,64 @@
     overflow-x: hidden;
   }
 
-  /* ─── NAV ─────────────────────────────────────────────── */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 2.5rem;
-    background: rgba(11,15,20,0.85);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+  /* ─── FLOATING NAV PANEL ──────────────────────────────── */
+  .float-nav {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    left: auto;
+    z-index: 100;
+    background: rgba(17,23,32,0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.85rem 0;
+    min-width: 140px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    cursor: grab;
+    user-select: none;
   }
-  nav .logo {
+  .float-nav:active { cursor: grabbing; }
+  .float-nav-handle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+  }
+  .float-nav .logo {
     font-family: var(--mono);
-    font-size: 13px;
+    font-size: 12px;
     color: var(--teal);
     letter-spacing: 0.08em;
   }
-  nav ul { list-style: none; display: flex; gap: 2rem; }
-  nav ul a {
+  .float-nav-grip {
+    display: flex; flex-direction: column; gap: 3px; opacity: 0.4;
+  }
+  .float-nav-grip span {
+    display: block; width: 14px; height: 1px; background: var(--muted);
+  }
+  .float-nav ul { list-style: none; padding: 0; }
+  .float-nav ul li a {
+    display: block;
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     text-decoration: none;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    transition: color 0.2s;
+    padding: 0.45rem 1rem;
+    transition: color 0.2s, background 0.2s;
   }
-  nav ul a:hover { color: var(--teal); }
+  .float-nav ul li a:hover {
+    color: var(--teal);
+    background: var(--teal-dim);
+  }
 
   /* ─── HERO ────────────────────────────────────────────── */
   .hero {
     min-height: 100vh;
     display: flex; align-items: center;
-    padding: 7rem 2.5rem 4rem;
+    padding: 4rem 2.5rem;
     position: relative;
     overflow: hidden;
   }
@@ -465,12 +491,11 @@
 
   /* ─── RESPONSIVE ──────────────────────────────────────── */
   @media (max-width: 768px) {
-    nav ul { display: none; }
+    .float-nav { display: none; }
     .hero-grid, .edu-grid { grid-template-columns: 1fr; }
     .hero-stats { grid-template-columns: 1fr 1fr; }
     section { padding: 4rem 1.5rem; }
-    nav { padding: 1rem 1.5rem; }
-    .hero { padding: 6rem 1.5rem 3rem; }
+    .hero { padding: 3rem 1.5rem; }
   }
 
   /* ─── POSTERS ─────────────────────────────────────────── */
@@ -700,9 +725,14 @@
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <span class="logo">kevin.li</span>
+<!-- FLOATING NAV -->
+<nav class="float-nav" id="float-nav">
+  <div class="float-nav-handle" id="float-nav-handle">
+    <span class="logo">kevin.li</span>
+    <div class="float-nav-grip">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
   <ul>
     <li><a href="#skills">Skills</a></li>
     <li><a href="#experience">Experience</a></li>
@@ -711,6 +741,46 @@
     <li><a href="#contact">Contact</a></li>
   </ul>
 </nav>
+<script>
+  (function() {
+    const nav = document.getElementById('float-nav');
+    const handle = document.getElementById('float-nav-handle');
+    let dragging = false, ox = 0, oy = 0;
+
+    handle.addEventListener('mousedown', e => {
+      dragging = true;
+      ox = e.clientX - nav.getBoundingClientRect().left;
+      oy = e.clientY - nav.getBoundingClientRect().top;
+      nav.style.transition = 'none';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const x = Math.min(Math.max(0, e.clientX - ox), window.innerWidth  - nav.offsetWidth);
+      const y = Math.min(Math.max(0, e.clientY - oy), window.innerHeight - nav.offsetHeight);
+      nav.style.left = x + 'px';
+      nav.style.top  = y + 'px';
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    // Save/restore position
+    const saved = localStorage.getItem('navPos');
+    if (saved) {
+      const p = JSON.parse(saved);
+      nav.style.left = p.x + 'px';
+      nav.style.top  = p.y + 'px';
+      nav.style.right = 'auto';
+    } else {
+      // Convert right:24px to an explicit left value for dragging
+      const rect = nav.getBoundingClientRect();
+      nav.style.left = rect.left + 'px';
+      nav.style.right = 'auto';
+    }
+    window.addEventListener('beforeunload', () => {
+      localStorage.setItem('navPos', JSON.stringify({ x: parseInt(nav.style.left), y: parseInt(nav.style.top) }));
+    });
+  })();
+</script>
 
 <!-- HERO -->
 <div class="hero">
